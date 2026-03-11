@@ -15,7 +15,7 @@ export class CloudinaryService {
             (resolve, reject) => {
                 const uploadStream = cloudinary.uploader.upload_stream(
                     {
-                        folder: 'digital-asset-manager',
+                        folder: 'movie-h7',
                         resource_type: 'auto',
                     },
                     (error, result) => {
