@@ -1,9 +1,9 @@
-import { IsNotEmpty, IsString, IsOptional, IsInt } from 'class-validator';
+import { IsNotEmpty, IsString, IsOptional, IsUUID } from 'class-validator';
 
 export class CreateTheaterDto {
     @IsNotEmpty()
-    @IsInt()
-    systemId: number;
+    @IsUUID()
+    systemId: string;
 
     @IsNotEmpty()
     @IsString()
@@ -12,4 +12,8 @@ export class CreateTheaterDto {
     @IsOptional()
     @IsString()
     address?: string;
+
+    @IsOptional()
+    @IsString()
+    logo?: string;
 }

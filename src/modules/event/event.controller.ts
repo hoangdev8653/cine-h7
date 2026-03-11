@@ -1,39 +1,39 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe } from '@nestjs/common';
 import { EventService } from './event.service';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 
-@Controller('events')
+@Controller('event')
 export class EventController {
     constructor(private readonly eventService: EventService) { }
 
     @Post()
-    create(@Body() createEventDto: CreateEventDto) {
-        return this.eventService.create(createEventDto);
+    async createEvent(@Body() createEventDto: CreateEventDto) {
+        return await this.eventService.createEvent(createEventDto);
     }
 
     @Get()
-    findAll() {
-        return this.eventService.findAll();
+    async getAllEvents() {
+        return await this.eventService.getAllEvents();
     }
 
     @Get(':id')
-    findOne(@Param('id', ParseIntPipe) id: number) {
-        return this.eventService.findOne(id);
+    async getEventById(@Param('id', ParseUUIDPipe) id: string) {
+        return await this.eventService.getEventById(id);
     }
 
     @Get('slug/:slug')
-    findBySlug(@Param('slug') slug: string) {
-        return this.eventService.findBySlug(slug);
+    async getEventBySlug(@Param('slug') slug: string) {
+        return await this.eventService.getEventBySlug(slug);
     }
 
     @Patch(':id')
-    update(@Param('id', ParseIntPipe) id: number, @Body() updateEventDto: UpdateEventDto) {
-        return this.eventService.update(id, updateEventDto);
+    async updateEvent(@Param('id', ParseUUIDPipe) id: string, @Body() updateEventDto: UpdateEventDto) {
+        return await this.eventService.updateEvent(id, updateEventDto);
     }
 
     @Delete(':id')
-    remove(@Param('id', ParseIntPipe) id: number) {
-        return this.eventService.remove(id);
+    async deleteEvent(@Param('id', ParseUUIDPipe) id: string) {
+        return await this.eventService.deleteEvent(id);
     }
 }

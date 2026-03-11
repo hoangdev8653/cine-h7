@@ -2,8 +2,8 @@ import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn } from 'typeor
 
 @Entity('events')
 export class Event {
-    @PrimaryGeneratedColumn()
-    id: number;
+    @PrimaryGeneratedColumn('uuid')
+    id: string;
 
     @Column({ type: 'varchar', comment: 'PROMOTION, NEWS' })
     type: string;

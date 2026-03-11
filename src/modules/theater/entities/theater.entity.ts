@@ -3,17 +3,20 @@ import { TheaterSystem } from '../../theater-system/entities/theater-system.enti
 
 @Entity('theaters')
 export class Theater {
-    @PrimaryGeneratedColumn()
-    id: number;
+    @PrimaryGeneratedColumn('uuid')
+    id: string;
 
     @Column({ name: 'system_id' })
-    systemId: number;
+    systemId: string;
 
     @Column({ type: 'varchar', nullable: false })
     name: string;
 
     @Column({ type: 'varchar', nullable: true })
     address: string;
+
+    @Column({ type: 'varchar', nullable: true })
+    logo: string;
 
     @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
     created_at: Date;

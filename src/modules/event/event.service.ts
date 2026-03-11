@@ -12,16 +12,16 @@ export class EventService {
         private readonly eventRepository: Repository<Event>,
     ) { }
 
-    async create(createEventDto: CreateEventDto): Promise<Event> {
+    async createEvent(createEventDto: CreateEventDto): Promise<Event> {
         const event = this.eventRepository.create(createEventDto);
         return await this.eventRepository.save(event);
     }
 
-    async findAll(): Promise<Event[]> {
+    async getAllEvents(): Promise<Event[]> {
         return await this.eventRepository.find();
     }
 
-    async findOne(id: number): Promise<Event> {
+    async getEventById(id: string): Promise<Event> {
         const event = await this.eventRepository.findOne({ where: { id } });
         if (!event) {
             throw new NotFoundException(`Event with ID ${id} not found`);
@@ -29,7 +29,7 @@ export class EventService {
         return event;
     }
 
-    async findBySlug(slug: string): Promise<Event> {
+    async getEventBySlug(slug: string): Promise<Event> {
         const event = await this.eventRepository.findOne({ where: { slug } });
         if (!event) {
             throw new NotFoundException(`Event with slug ${slug} not found`);
@@ -37,14 +37,14 @@ export class EventService {
         return event;
     }
 
-    async update(id: number, updateEventDto: UpdateEventDto): Promise<Event> {
-        const event = await this.findOne(id);
+    async updateEvent(id: string, updateEventDto: UpdateEventDto): Promise<Event> {
+        const event = await this.getEventById(id);
         Object.assign(event, updateEventDto);
         return await this.eventRepository.save(event);
     }
 
-    async remove(id: number): Promise<void> {
-        const event = await this.findOne(id);
+    async deleteEvent(id: string): Promise<void> {
+        const event = await this.getEventById(id);
         await this.eventRepository.remove(event);
     }
 }

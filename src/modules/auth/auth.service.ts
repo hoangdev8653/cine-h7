@@ -1,34 +1,35 @@
 import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
 import { JwtService } from '@nestjs/jwt';
 import { UserService } from '../user/user.service';
-import { RegisterDto, LoginDto, RefreshTokenDto } from './auth.dto';
+import { RegisterDto, LoginDto, RefreshTokenDto } from './dto/auth.dto';
 import * as bcrypt from 'bcrypt';
+import { Repository } from 'typeorm';
+import { User } from '../user/entities/user.entity';
 
 @Injectable()
 export class AuthService {
     constructor(
-        private readonly userService: UserService,
+        @InjectRepository(User)
+        private readonly userRepository: Repository<User>,
         private readonly jwtService: JwtService,
     ) { }
 
     async register(registerDto: RegisterDto) {
-        const existingUser = await this.userService.findOneByEmail(registerDto.email);
+        const existingUser = await this.userRepository.findOne({ where: { email: registerDto.email } });
         if (existingUser) {
             throw new ConflictException('Email đã tồn tại');
         }
-
         const hashedPassword = await bcrypt.hash(registerDto.password, 10);
-        const user = await this.userService.create({
+        const user = await this.userRepository.save({
             ...registerDto,
             password: hashedPassword,
         });
-
-        const { password, ...result } = user;
-        return result;
+        return user;
     }
 
     async login(loginDto: LoginDto) {
-        const user = await this.userService.findOneByEmail(loginDto.email);
+        const user = await this.userRepository.findOne({ where: { email: loginDto.email } });
         if (!user) {
             throw new UnauthorizedException('Email hoặc mật khẩu không chính xác');
         }
@@ -39,19 +40,24 @@ export class AuthService {
         }
 
         const payload = { email: user.email, sub: user.id };
+        const access_token = this.jwtService.sign(payload);
+        const refresh_token = this.jwtService.sign(payload, {
+            expiresIn: '7d',
+        });
         return {
-            access_token: this.jwtService.sign(payload),
+            access_token,
+            refresh_token,
             user: {
                 id: user.id,
                 email: user.email,
-                username: user.username,
+                role: user.role,
+                name: user.name,
+                status: user.status,
             },
         };
     }
 
     async refresh(refreshTokenDto: RefreshTokenDto) {
-        // Basic implementation for demonstration
-        // In a real app, you would verify the refresh token against a database/secret
         try {
             const payload = this.jwtService.verify(refreshTokenDto.refreshToken);
             const newPayload = { email: payload.email, sub: payload.sub };

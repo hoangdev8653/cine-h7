@@ -4,24 +4,32 @@ import { Repository } from 'typeorm';
 import { Theater } from './entities/theater.entity';
 import { CreateTheaterDto } from './dto/create-theater.dto';
 import { UpdateTheaterDto } from './dto/update-theater.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
+
 
 @Injectable()
 export class TheaterService {
     constructor(
         @InjectRepository(Theater)
         private readonly theaterRepository: Repository<Theater>,
+        private readonly cloudinaryService: CloudinaryService,
     ) { }
 
-    async create(createTheaterDto: CreateTheaterDto): Promise<Theater> {
+    async createTheater(createTheaterDto: CreateTheaterDto, file?: Express.Multer.File): Promise<Theater> {
+        if (file) {
+            const result = await this.cloudinaryService.uploadFile(file);
+            createTheaterDto.logo = result.secure_url;
+        }
         const theater = this.theaterRepository.create(createTheaterDto);
         return await this.theaterRepository.save(theater);
     }
 
-    async findAll(): Promise<Theater[]> {
+    async getAllTheaters(): Promise<Theater[]> {
         return await this.theaterRepository.find({ relations: ['system'] });
     }
 
-    async findOne(id: number): Promise<Theater> {
+    async getTheaterById(id: string): Promise<Theater> {
         const theater = await this.theaterRepository.findOne({
             where: { id },
             relations: ['system'],
@@ -32,14 +40,18 @@ export class TheaterService {
         return theater;
     }
 
-    async update(id: number, updateTheaterDto: UpdateTheaterDto): Promise<Theater> {
-        const theater = await this.findOne(id);
+    async updateTheater(id: string, updateTheaterDto: UpdateTheaterDto, file?: Express.Multer.File): Promise<Theater> {
+        const theater = await this.getTheaterById(id);
+        if (file) {
+            const result = await this.cloudinaryService.uploadFile(file);
+            updateTheaterDto.logo = result.secure_url;
+        }
         Object.assign(theater, updateTheaterDto);
         return await this.theaterRepository.save(theater);
     }
 
-    async remove(id: number): Promise<void> {
-        const theater = await this.findOne(id);
+    async deleteTheater(id: string): Promise<void> {
+        const theater = await this.getTheaterById(id);
         await this.theaterRepository.remove(theater);
     }
 }

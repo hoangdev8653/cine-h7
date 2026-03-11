@@ -1,34 +1,44 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe, UseInterceptors, UploadedFile } from '@nestjs/common';
 import { TheaterService } from './theater.service';
 import { CreateTheaterDto } from './dto/create-theater.dto';
 import { UpdateTheaterDto } from './dto/update-theater.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
 
-@Controller('theaters')
+@Controller('theater')
 export class TheaterController {
     constructor(private readonly theaterService: TheaterService) { }
 
     @Post()
-    create(@Body() createTheaterDto: CreateTheaterDto) {
-        return this.theaterService.create(createTheaterDto);
+    @UseInterceptors(FileInterceptor('logo'))
+    async createTheater(
+        @Body() createTheaterDto: CreateTheaterDto,
+        @UploadedFile() file: Express.Multer.File,
+    ) {
+        return await this.theaterService.createTheater(createTheaterDto, file);
     }
 
     @Get()
-    findAll() {
-        return this.theaterService.findAll();
+    async getAllTheaters() {
+        return await this.theaterService.getAllTheaters();
     }
 
     @Get(':id')
-    findOne(@Param('id', ParseIntPipe) id: number) {
-        return this.theaterService.findOne(id);
+    async getTheaterById(@Param('id', ParseUUIDPipe) id: string) {
+        return await this.theaterService.getTheaterById(id);
     }
 
     @Patch(':id')
-    update(@Param('id', ParseIntPipe) id: number, @Body() updateTheaterDto: UpdateTheaterDto) {
-        return this.theaterService.update(id, updateTheaterDto);
+    @UseInterceptors(FileInterceptor('logo'))
+    async updateTheater(
+        @Param('id', ParseUUIDPipe) id: string,
+        @Body() updateTheaterDto: UpdateTheaterDto,
+        @UploadedFile() file: Express.Multer.File,
+    ) {
+        return await this.theaterService.updateTheater(id, updateTheaterDto, file);
     }
 
     @Delete(':id')
-    remove(@Param('id', ParseIntPipe) id: number) {
-        return this.theaterService.remove(id);
+    async deleteTheater(@Param('id', ParseUUIDPipe) id: string) {
+        return await this.theaterService.deleteTheater(id);
     }
 }

@@ -10,7 +10,7 @@ export class RegisterDto {
     password: string;
 
     @IsNotEmpty({ message: 'Tên người dùng không được để trống' })
-    username: string;
+    name: string;
 }
 
 export class LoginDto {

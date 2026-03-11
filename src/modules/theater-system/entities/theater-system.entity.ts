@@ -3,8 +3,8 @@ import { Theater } from '../../theater/entities/theater.entity';
 
 @Entity('theater_systems')
 export class TheaterSystem {
-    @PrimaryGeneratedColumn()
-    id: number;
+    @PrimaryGeneratedColumn('uuid')
+    id: string;
 
     @Column({ type: 'varchar', nullable: false })
     name: string;
