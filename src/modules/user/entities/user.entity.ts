@@ -36,6 +36,16 @@ export class User {
     })
     status: "ACTIVE" | "INACTIVE";
 
+    @Column({
+        type: 'enum',
+        enum: ['LOCAL', 'GOOGLE'],
+        default: 'LOCAL',
+    })
+    auth_method: 'LOCAL' | 'GOOGLE';
+
+    @Column({ nullable: true })
+    avatar: string;
+
     @CreateDateColumn()
     created_at: Date;
 

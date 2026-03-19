@@ -1,6 +1,6 @@
 import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { RegisterDto, LoginDto, RefreshTokenDto } from './dto/auth.dto';
+import { RegisterDto, LoginDto, RefreshTokenDto, GoogleLoginDto } from './dto/auth.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -18,6 +18,14 @@ export class AuthController {
     async login(@Body() loginDto: LoginDto) {
         const result = await this.authService.login(loginDto);
         return result;
+    }
+
+    @Post("google")
+    @HttpCode(HttpStatus.OK)
+    async loginGoogle(@Body() googleLoginDto: GoogleLoginDto) {
+        const result = await this.authService.googleLogin(googleLoginDto);
+        return result;
+
     }
 
     @Post('refresh')

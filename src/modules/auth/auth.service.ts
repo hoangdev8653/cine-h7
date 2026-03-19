@@ -1,19 +1,31 @@
 import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 import { UserService } from '../user/user.service';
-import { RegisterDto, LoginDto, RefreshTokenDto } from './dto/auth.dto';
+import { RegisterDto, LoginDto, RefreshTokenDto, GoogleLoginDto } from './dto/auth.dto';
 import * as bcrypt from 'bcrypt';
 import { Repository } from 'typeorm';
 import { User } from '../user/entities/user.entity';
+import { MailService } from 'src/config/mail.config';
+import { OAuth2Client } from 'google-auth-library';
+import { generateToken } from 'src/utils/generateToken';
 
 @Injectable()
 export class AuthService {
+    private googleClient: OAuth2Client;
+
     constructor(
         @InjectRepository(User)
         private readonly userRepository: Repository<User>,
         private readonly jwtService: JwtService,
-    ) { }
+        private readonly mailService: MailService,
+        private readonly configService: ConfigService,
+    ) {
+        this.googleClient = new OAuth2Client(
+            this.configService.get<string>('GOOGLE_CLIENT_ID')
+        );
+    }
 
     async register(registerDto: RegisterDto) {
         const existingUser = await this.userRepository.findOne({ where: { email: registerDto.email } });
@@ -24,6 +36,7 @@ export class AuthService {
         const user = await this.userRepository.save({
             ...registerDto,
             password: hashedPassword,
+            auth_method: 'LOCAL',
         });
         return user;
     }
@@ -40,10 +53,7 @@ export class AuthService {
         }
 
         const payload = { email: user.email, sub: user.id };
-        const access_token = this.jwtService.sign(payload);
-        const refresh_token = this.jwtService.sign(payload, {
-            expiresIn: '7d',
-        });
+        const { access_token, refresh_token } = generateToken(this.jwtService, payload);
         return {
             access_token,
             refresh_token,
@@ -54,6 +64,59 @@ export class AuthService {
                 name: user.name,
                 status: user.status,
             },
+        };
+    }
+
+    async verifyGoogleToken(token: string) {
+        try {
+            const ticket = await this.googleClient.verifyIdToken({
+                idToken: token,
+                audience: this.configService.get<string>('GOOGLE_CLIENT_ID'),
+            });
+            return ticket.getPayload();
+        } catch (error) {
+            throw new UnauthorizedException('Google token không hợp lệ');
+        }
+    }
+
+    async googleLogin(googleLoginDto: GoogleLoginDto) {
+        const payloadFromGoogle = await this.verifyGoogleToken(googleLoginDto.googleToken);
+        if (!payloadFromGoogle) {
+            throw new UnauthorizedException('Không thể lấy thông tin từ Google');
+        }
+
+        const { email, name, picture: avatar } = payloadFromGoogle;
+
+        let user = await this.userRepository.findOne({ where: { email } });
+
+        if (!user) {
+            user = this.userRepository.create({
+                email,
+                name,
+                avatar,
+                auth_method: 'GOOGLE',
+                password: '',
+            });
+            await this.userRepository.save(user);
+        } else {
+            if (avatar && user.avatar !== avatar) {
+                await this.userRepository.update(user.id, { avatar });
+            }
+        }
+
+        const payload = { email: user.email, sub: user.id };
+        const { access_token, refresh_token } = generateToken(this.jwtService, payload);
+
+        return {
+            user: {
+                id: user.id,
+                email: user.email,
+                name: user.name,
+                role: user.role,
+                avatar: user.avatar
+            },
+            access_token,
+            refresh_token,
         };
     }
 

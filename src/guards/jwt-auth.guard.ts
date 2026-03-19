@@ -1,4 +1,5 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { PassportStrategy } from '@nestjs/passport';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -42,3 +43,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         return user;
     }
 }
+
+@Injectable()
+export class JwtAuthGuard extends AuthGuard('jwt') {}
