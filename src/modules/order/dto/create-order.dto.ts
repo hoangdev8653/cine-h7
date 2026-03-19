@@ -1,32 +1,38 @@
-import { IsNotEmpty, IsNumber, IsString, IsEnum, IsOptional, IsUUID, IsDateString } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsNumber,
+  IsString,
+  IsEnum,
+  IsOptional,
+  IsUUID,
+  IsDateString,
+  IsArray,
+} from 'class-validator';
 
-export enum PaymentStatus {
-    PENDING = 'PENDING',
-    PAID = 'PAID',
-    CANCELLED = 'CANCELLED',
-    EXPIRED = 'EXPIRED',
+export enum OrderStatus {
+  PENDING = 'PENDING',
+  PAID = 'PAID',
+  CANCELLED = 'CANCELLED',
+  EXPIRED = 'EXPIRED',
 }
 
 export enum PaymentMethod {
-    VNPAY = 'VNPAY',
-    MOMO = 'MOMO',
-    STRIPE = 'STRIPE',
+  VNPAY = 'vnpay',
+  MOMO = 'momo',
+  STRIPE = 'stripe',
 }
 
 export class CreateOrderDto {
-    @IsNotEmpty()
-    @IsUUID()
-    userId: string;
+  @IsNotEmpty()
+  @IsUUID()
+  showtimeId: string;
 
-    @IsNotEmpty()
-    @IsNumber()
-    total_amount: number;
+  @IsNotEmpty()
+  @IsArray()
+  @IsUUID('4', { each: true })
+  seatIds: string[];
 
-    @IsOptional()
-    @IsEnum(PaymentMethod)
-    payment_method?: string;
-
-    @IsOptional()
-    @IsDateString()
-    expire_at?: Date;
+  @IsNotEmpty()
+  @IsEnum(PaymentMethod)
+  method: PaymentMethod;
 }

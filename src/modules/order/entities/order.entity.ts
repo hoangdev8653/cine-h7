@@ -1,5 +1,6 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
 import { User } from '../../user/entities/user.entity';
+import { Ticket } from '../../ticket/entities/ticket.entity';
 
 @Entity('orders')
 export class Order {
@@ -17,7 +18,7 @@ export class Order {
         comment: 'PENDING, PAID, CANCELLED, EXPIRED',
         default: 'PENDING',
     })
-    payment_status: string;
+    status: string;
 
     @Column({
         type: 'varchar',
@@ -41,4 +42,7 @@ export class Order {
     @ManyToOne(() => User, (user) => user.id)
     @JoinColumn({ name: 'user_id' })
     user: User;
+
+    @OneToMany(() => Ticket, (ticket) => ticket.order)
+    tickets: Ticket[];
 }

@@ -1,34 +1,54 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  ParseUUIDPipe,
+  UseGuards,
+  Req,
+} from '@nestjs/common';
 import { OrderService } from './order.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
+import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
 
-@Controller('orders')
+@Controller('order')
 export class OrderController {
-    constructor(private readonly orderService: OrderService) { }
+  constructor(private readonly orderService: OrderService) { }
 
-    @Post()
-    create(@Body() createOrderDto: CreateOrderDto) {
-        return this.orderService.create(createOrderDto);
-    }
+  @Post()
+  @UseGuards(JwtAuthGuard)
+  async createOrder(
+    @Body() createOrderDto: CreateOrderDto,
+    @Req() req: { user: { id: string } },
+  ) {
+    const userId = req.user.id;
+    return await this.orderService.createOrder(createOrderDto, userId);
+  }
 
-    @Get()
-    findAll() {
-        return this.orderService.findAll();
-    }
+  @Get()
+  async getAllOrders() {
+    return await this.orderService.getAllOrders();
+  }
 
-    @Get(':id')
-    findOne(@Param('id', ParseUUIDPipe) id: string) {
-        return this.orderService.findOne(id);
-    }
+  @Get(':id')
+  async getOrderById(@Param('id', ParseUUIDPipe) id: string) {
+    return await this.orderService.getOrderById(id);
+  }
 
-    @Patch(':id')
-    update(@Param('id', ParseUUIDPipe) id: string, @Body() updateOrderDto: UpdateOrderDto) {
-        return this.orderService.update(id, updateOrderDto);
-    }
+  @Patch(':id')
+  async updateOrder(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() updateOrderDto: UpdateOrderDto,
+  ) {
+    return await this.orderService.updateOrder(id, updateOrderDto);
+  }
 
-    @Delete(':id')
-    remove(@Param('id', ParseUUIDPipe) id: string) {
-        return this.orderService.remove(id);
-    }
+  @Delete(':id')
+  async deleteOrder(@Param('id', ParseUUIDPipe) id: string) {
+    return await this.orderService.deleteOrder(id);
+  }
 }
