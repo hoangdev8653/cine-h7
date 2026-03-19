@@ -4,16 +4,22 @@ import { Repository } from 'typeorm';
 import { Event } from './entities/event.entity';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
 
 @Injectable()
 export class EventService {
     constructor(
         @InjectRepository(Event)
         private readonly eventRepository: Repository<Event>,
+        private readonly cloudinaryService: CloudinaryService,
     ) { }
 
-    async createEvent(createEventDto: CreateEventDto): Promise<Event> {
+    async createEvent(createEventDto: CreateEventDto, thumbnail?: Express.Multer.File): Promise<Event> {
         const event = this.eventRepository.create(createEventDto);
+        if (thumbnail) {
+            const result = await this.cloudinaryService.uploadFile(thumbnail);
+            event.thumbnail = result.secure_url;
+        }
         return await this.eventRepository.save(event);
     }
 

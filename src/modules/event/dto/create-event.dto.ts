@@ -1,4 +1,7 @@
 import { IsNotEmpty, IsString, IsOptional, IsBoolean, IsObject } from 'class-validator';
+import { BadRequestException } from '@nestjs/common';
+import { Transform } from 'class-transformer';
+import type { EventContent } from '../entities/event.entity';
 
 export class CreateEventDto {
     @IsNotEmpty()
@@ -18,8 +21,16 @@ export class CreateEventDto {
     thumbnail?: string;
 
     @IsOptional()
+    @Transform(({ value, key }) => {
+        if (typeof value !== 'string') return value;
+        try {
+            return JSON.parse(value);
+        } catch (e) {
+            throw new BadRequestException(`${key} must be a valid JSON string`);
+        }
+    })
     @IsObject()
-    content?: any;
+    content?: EventContent;
 
     @IsOptional()
     @IsBoolean()

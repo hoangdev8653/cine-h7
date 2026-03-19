@@ -1,5 +1,20 @@
 import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn } from 'typeorm';
 
+export interface EventSection {
+    title: string;
+    body: string;
+}
+
+export interface EventContent {
+    summary: string;
+    author: string;
+    tags: string[];
+    sections: EventSection[];
+    location: string;
+    hotline: string;
+    images: string[];
+}
+
 @Entity('events')
 export class Event {
     @PrimaryGeneratedColumn('uuid')
@@ -18,7 +33,7 @@ export class Event {
     thumbnail: string;
 
     @Column({ type: 'json', nullable: true, comment: 'Chứa summary, sections, tags, location...' })
-    content: any;
+    content: EventContent;
 
     @Column({ type: 'boolean', default: true })
     is_active: boolean;

@@ -1,15 +1,20 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe, UseInterceptors, UploadedFiles } from '@nestjs/common';
 import { EventService } from './event.service';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
 
 @Controller('event')
 export class EventController {
     constructor(private readonly eventService: EventService) { }
 
     @Post()
-    async createEvent(@Body() createEventDto: CreateEventDto) {
-        return await this.eventService.createEvent(createEventDto);
+    @UseInterceptors(FileFieldsInterceptor([
+        { name: 'thumbnail', maxCount: 1 },
+    ]))
+    async createEvent(@Body() createEventDto: CreateEventDto, @UploadedFiles() files: { thumbnail?: Express.Multer.File[] }) {
+        const thumbnail = files?.thumbnail?.[0];
+        return await this.eventService.createEvent(createEventDto, thumbnail);
     }
 
     @Get()
