@@ -12,7 +12,9 @@ export class ShowtimeService {
     private readonly showtimeRepository: Repository<Showtime>,
   ) { }
 
-  async createShowtime(createShowtimeDto: CreateShowtimeDto): Promise<Showtime> {
+  async createShowtime(
+    createShowtimeDto: CreateShowtimeDto,
+  ): Promise<Showtime> {
     const showtime = this.showtimeRepository.create(createShowtimeDto);
     return await this.showtimeRepository.save(showtime);
   }
@@ -43,6 +45,55 @@ export class ShowtimeService {
         },
       },
     });
+  }
+
+  async getShowtimeByMovie(movieId: string) {
+    const showtimes = await this.showtimeRepository.find({
+      where: { movieId },
+      order: { startTime: 'ASC' },
+      relations: {
+        movie: true,
+        room: true,
+      },
+      select: {
+        id: true,
+        movieId: true,
+        roomId: true,
+        startTime: true,
+        price: true,
+        created_at: true,
+        movie: {
+          id: true,
+          title: true,
+          poster: true,
+          duration: true,
+        },
+        room: {
+          id: true,
+          name: true,
+          type: true,
+        },
+      },
+    });
+
+    // Gom nhóm theo ngày (YYYY-MM-DD)
+    const grouped = showtimes.reduce(
+      (acc, current) => {
+        const date = new Date(current.startTime).toISOString().split('T')[0];
+        if (!acc[date]) {
+          acc[date] = [];
+        }
+        acc[date].push(current);
+        return acc;
+      },
+      {} as Record<string, Showtime[]>,
+    );
+
+    // Chuyển object thành mảng để FE dễ dùng
+    return Object.keys(grouped).map((date) => ({
+      date,
+      showtimes: grouped[date],
+    }));
   }
 
   async getShowtimeById(id: string): Promise<Showtime> {
@@ -78,7 +129,10 @@ export class ShowtimeService {
     return showtime;
   }
 
-  async updateShowtime(id: string, updateShowtimeDto: UpdateShowtimeDto): Promise<Showtime> {
+  async updateShowtime(
+    id: string,
+    updateShowtimeDto: UpdateShowtimeDto,
+  ): Promise<Showtime> {
     const showtime = await this.getShowtimeById(id);
     const updatedShowtime = Object.assign(showtime, updateShowtimeDto);
     return await this.showtimeRepository.save(updatedShowtime);
@@ -87,12 +141,5 @@ export class ShowtimeService {
   async deleteShowtime(id: string): Promise<void> {
     const showtime = await this.getShowtimeById(id);
     await this.showtimeRepository.remove(showtime);
-  }
-
-  async findByMovie(movieId: string): Promise<Showtime[]> {
-    return await this.showtimeRepository.find({
-      where: { movieId },
-      relations: ['movie'],
-    });
   }
 }
