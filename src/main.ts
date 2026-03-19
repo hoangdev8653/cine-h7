@@ -7,11 +7,13 @@ import { corsConfig } from './config/cors.config';
 import { ValidationPipe, ClassSerializerInterceptor } from '@nestjs/common';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
+import morgan from 'morgan';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.enableCors(corsConfig);
   app.use(cookieParser());
+  app.use(morgan('dev'));
 
   app.useGlobalPipes(
     new ValidationPipe({
