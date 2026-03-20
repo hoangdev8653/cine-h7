@@ -1,10 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { ILike, Repository } from 'typeorm';
 import { Movie } from './entities/movie.entity';
 import { CreateMovieDto } from './dto/create-movie.dto';
 import { UpdateMovieDto } from './dto/update-movie.dto';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
+import { PaginationDto } from '../user/dto/user.dto';
+import { pagination } from 'src/utils/pagination';
 
 @Injectable()
 export class MovieService {
@@ -27,8 +29,18 @@ export class MovieService {
         return await this.movieRepository.save(movie);
     }
 
-    async getAllMovies(): Promise<Movie[]> {
-        return await this.movieRepository.find();
+    async getAllMovies(paginationDto: PaginationDto) {
+        const { skip, take, page, limit } = pagination(paginationDto.page ?? 1, paginationDto.limit ?? 10);
+        const search = paginationDto.search;
+        const [movie, total] = await this.movieRepository.findAndCount({
+            skip,
+            take,
+            where: search ? {
+                title: ILike(`%${search}%`),
+            } : {},
+            order: { created_at: 'DESC' },
+        });
+        return { movie, total, page, limit, totalPages: Math.ceil(total / limit) };
     }
 
     async getMovieById(id: string): Promise<Movie> {
