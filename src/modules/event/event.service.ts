@@ -1,10 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { ILike, Repository } from 'typeorm';
 import { Event } from './entities/event.entity';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
+import { PaginationDto } from '../user/dto/user.dto';
+import { pagination } from 'src/utils/pagination';
 
 @Injectable()
 export class EventService {
@@ -23,8 +25,18 @@ export class EventService {
         return await this.eventRepository.save(event);
     }
 
-    async getAllEvents(): Promise<Event[]> {
-        return await this.eventRepository.find();
+    async getAllEvents(paginationDto: PaginationDto) {
+        const { skip, take, page, limit } = pagination(paginationDto.page ?? 1, paginationDto.limit ?? 10);
+        const search = paginationDto.search;
+        const [events, total] = await this.eventRepository.findAndCount({
+            skip,
+            take,
+            where: search ? {
+                title: ILike(`%${search}%`),
+            } : {},
+            order: { created_at: 'DESC' },
+        });
+        return { events, total, page, limit, totalPages: Math.ceil(total / limit) };
     }
 
     async getEventById(id: string): Promise<Event> {

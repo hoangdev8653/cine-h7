@@ -1,8 +1,9 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe, UseInterceptors, UploadedFiles } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe, UseInterceptors, UploadedFiles, Query } from '@nestjs/common';
 import { EventService } from './event.service';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
+import { PaginationDto } from '../user/dto/user.dto';
 
 @Controller('event')
 export class EventController {
@@ -18,8 +19,8 @@ export class EventController {
     }
 
     @Get()
-    async getAllEvents() {
-        return await this.eventService.getAllEvents();
+    async getAllEvents(@Query() paginationDto: PaginationDto) {
+        return await this.eventService.getAllEvents(paginationDto);
     }
 
     @Get(':id')
