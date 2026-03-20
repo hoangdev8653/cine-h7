@@ -9,11 +9,13 @@ import {
   ParseUUIDPipe,
   UseGuards,
   Req,
+  Query,
 } from '@nestjs/common';
 import { OrderService } from './order.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
+import { PaginationDto } from '../user/dto/user.dto';
 
 @Controller('order')
 export class OrderController {
@@ -30,8 +32,8 @@ export class OrderController {
   }
 
   @Get()
-  async getAllOrders() {
-    return await this.orderService.getAllOrders();
+  async getAllOrders(@Query() paginationDto: PaginationDto) {
+    return await this.orderService.getAllOrders(paginationDto);
   }
 
   @Get(':id')

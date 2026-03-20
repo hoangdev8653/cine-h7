@@ -7,7 +7,7 @@ import {
   forwardRef,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource, In } from 'typeorm';
+import { Repository, DataSource, In, ILike } from 'typeorm';
 import { Order } from './entities/order.entity';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
@@ -15,6 +15,8 @@ import { Showtime } from '../showtime/entities/showtime.entity';
 import { Seat } from '../seat/entities/seat.entity';
 import { Ticket } from '../ticket/entities/ticket.entity';
 import { PaymentService } from '../payment/payment.service';
+import { PaginationDto } from '../user/dto/user.dto';
+import { pagination } from 'src/utils/pagination';
 
 @Injectable()
 export class OrderService {
@@ -24,7 +26,7 @@ export class OrderService {
     @Inject(forwardRef(() => PaymentService))
     private readonly paymentService: PaymentService,
     private dataSource: DataSource,
-  ) {}
+  ) { }
 
   async createOrder(
     createOrderDto: CreateOrderDto,
@@ -126,9 +128,20 @@ export class OrderService {
     }
   }
 
-  async getAllOrders(): Promise<Order[]> {
-    return await this.orderRepository.find({
+  async getAllOrders(paginationDto: PaginationDto) {
+    const { skip, take, page, limit } = pagination(paginationDto.page ?? 1, paginationDto.limit ?? 10);
+    const search = paginationDto.search;
+
+    const [orders, total] = await this.orderRepository.findAndCount({
       relations: ['user'],
+      skip,
+      take,
+      where: search ? [
+        { transaction_id: ILike(`%${search}%`) },
+        { user: { name: ILike(`%${search}%`) } },
+        { user: { email: ILike(`%${search}%`) } },
+      ] : {},
+      order: { created_at: 'DESC' },
       select: {
         user: {
           id: true,
@@ -138,6 +151,7 @@ export class OrderService {
         },
       },
     });
+    return { orders, total, page, limit, totalPages: Math.ceil(total / limit) };
   }
 
   async getOrderById(id: string): Promise<Order> {
