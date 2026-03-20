@@ -6,14 +6,16 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { ShowtimeService } from './showtime.service';
 import { CreateShowtimeDto } from './dto/create-showtime.dto';
 import { UpdateShowtimeDto } from './dto/update-showtime.dto';
+import { PaginationDto } from '../user/dto/user.dto';
 
 @Controller('showtime')
 export class ShowtimeController {
-  constructor(private readonly showtimeService: ShowtimeService) {}
+  constructor(private readonly showtimeService: ShowtimeService) { }
 
   @Post()
   async createShowtime(@Body() createShowtimeDto: CreateShowtimeDto) {
@@ -21,8 +23,8 @@ export class ShowtimeController {
   }
 
   @Get()
-  async getAllShowtimes() {
-    return await this.showtimeService.getAllShowtimes();
+  async getAllShowtimes(@Query() paginationDto: PaginationDto) {
+    return await this.showtimeService.getAllShowtimes(paginationDto);
   }
 
   @Get('/movie/:movieId')

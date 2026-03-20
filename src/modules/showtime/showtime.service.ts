@@ -1,9 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { ILike, Repository } from 'typeorm';
 import { Showtime } from './entities/showtime.entity';
 import { CreateShowtimeDto } from './dto/create-showtime.dto';
 import { UpdateShowtimeDto } from './dto/update-showtime.dto';
+import { PaginationDto } from '../user/dto/user.dto';
+import { pagination } from 'src/utils/pagination';
 
 @Injectable()
 export class ShowtimeService {
@@ -19,8 +21,10 @@ export class ShowtimeService {
     return await this.showtimeRepository.save(showtime);
   }
 
-  async getAllShowtimes(): Promise<Showtime[]> {
-    return await this.showtimeRepository.find({
+  async getAllShowtimes(paginationDto: PaginationDto) {
+    const { skip, take, page, limit } = pagination(paginationDto.page ?? 1, paginationDto.limit ?? 10);
+    const search = paginationDto.search;
+    const [showtimes, total] = await this.showtimeRepository.findAndCount({
       relations: {
         movie: true,
         room: true,
@@ -44,7 +48,16 @@ export class ShowtimeService {
           type: true,
         },
       },
+      where: search ? {
+        movie: {
+          title: ILike(`%${search}%`),
+        },
+      } : {},
+      skip,
+      take: limit,
+      order: { created_at: 'DESC' },
     });
+    return { showtimes, total, page, limit, totalPages: Math.ceil(total / limit) };
   }
 
   async getShowtimeByMovie(movieId: string) {
