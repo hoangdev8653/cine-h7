@@ -1,8 +1,9 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe, UseInterceptors, UploadedFile } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe, UseInterceptors, UploadedFile, Query } from '@nestjs/common';
 import { TheaterService } from './theater.service';
 import { CreateTheaterDto } from './dto/create-theater.dto';
 import { UpdateTheaterDto } from './dto/update-theater.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { PaginationDto } from '../user/dto/user.dto';
 
 @Controller('theater')
 export class TheaterController {
@@ -18,8 +19,8 @@ export class TheaterController {
     }
 
     @Get()
-    async getAllTheaters() {
-        return await this.theaterService.getAllTheaters();
+    async getAllTheaters(@Query() paginationDto: PaginationDto) {
+        return await this.theaterService.getAllTheaters(paginationDto);
     }
 
     @Get(':id')

@@ -1,11 +1,13 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { ILike, Repository } from 'typeorm';
 import { Theater } from './entities/theater.entity';
 import { CreateTheaterDto } from './dto/create-theater.dto';
 import { UpdateTheaterDto } from './dto/update-theater.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
+import { PaginationDto } from '../user/dto/user.dto';
+import { pagination } from 'src/utils/pagination';
 
 
 @Injectable()
@@ -25,8 +27,19 @@ export class TheaterService {
         return await this.theaterRepository.save(theater);
     }
 
-    async getAllTheaters(): Promise<Theater[]> {
-        return await this.theaterRepository.find({ relations: ['system'] });
+    async getAllTheaters(paginationDto: PaginationDto) {
+        const { skip, take, page, limit } = pagination(paginationDto.page ?? 1, paginationDto.limit ?? 10);
+        const search = paginationDto.search;
+        const [theater, total] = await this.theaterRepository.findAndCount({
+            skip,
+            take,
+            where: search ? {
+                name: ILike(`%${search}%`),
+            } : {},
+            relations: ['system'],
+            order: { created_at: 'DESC' },
+        });
+        return { theater, total, page, limit, totalPages: Math.ceil(total / limit) };
     }
 
     async getTheaterById(id: string): Promise<Theater> {
