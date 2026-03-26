@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe, UseInterceptors, UploadedFiles, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe, UseInterceptors, UploadedFiles, Query, Req } from '@nestjs/common';
 import { MovieService } from './movie.service';
 import { CreateMovieDto } from './dto/create-movie.dto';
 import { UpdateMovieDto } from './dto/update-movie.dto';
@@ -24,8 +24,9 @@ export class MovieController {
     }
 
     @Get()
-    async getAllMovies(@Query() paginationDto: PaginationDto) {
-        return await this.movieService.getAllMovies(paginationDto);
+    async getAllMovies(@Query() paginationDto: PaginationDto, @Req() req: any) {
+        const hasQueryParams = Object.keys(req.query).length > 0;
+        return await this.movieService.getAllMovies(paginationDto, hasQueryParams);
     }
 
     @Get(':id')

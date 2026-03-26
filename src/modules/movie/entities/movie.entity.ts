@@ -1,4 +1,5 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, OneToMany } from 'typeorm';
+import { Review } from '../../review/entities/review.entity';
 
 @Entity('movies')
 export class Movie {
@@ -34,6 +35,9 @@ export class Movie {
 
     @Column({ type: 'boolean', default: true })
     isShowing: boolean;
+
+    @OneToMany(() => Review, review => review.movie)
+    reviews: Review[];
 
     @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
     created_at: Date;

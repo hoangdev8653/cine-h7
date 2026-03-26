@@ -29,18 +29,25 @@ export class MovieService {
         return await this.movieRepository.save(movie);
     }
 
-    async getAllMovies(paginationDto: PaginationDto) {
+    async getAllMovies(paginationDto: PaginationDto, hasQueryParams: boolean = true) {
         const { skip, take, page, limit } = pagination(paginationDto.page ?? 1, paginationDto.limit ?? 10);
         const search = paginationDto.search;
-        const [movie, total] = await this.movieRepository.findAndCount({
-            skip,
-            take,
-            where: search ? {
-                title: ILike(`%${search}%`),
-            } : {},
-            order: { created_at: 'DESC' },
-        });
-        return { movie, total, page, limit, totalPages: Math.ceil(total / limit) };
+        if (hasQueryParams) {
+            const [movie, total] = await this.movieRepository.findAndCount({
+                skip,
+                take,
+                where: search ? {
+                    title: ILike(`%${search}%`),
+                } : {},
+                order: { created_at: 'DESC' },
+            });
+            return { movie, total, page, limit, totalPages: Math.ceil(total / limit) };
+        } else {
+            const movie = await this.movieRepository.find({
+                order: { created_at: 'DESC' },
+            });
+            return { movie };
+        }
     }
 
     async getMovieById(id: string): Promise<Movie> {
