@@ -22,6 +22,9 @@ import { TicketModule } from './modules/ticket/ticket.module';
 import { TasksModule } from './modules/schedule/schedule.module';
 import { PaymentModule } from './modules/payment/payment.module';
 import { StatisticsModule } from './modules/statistics/statistics.module';
+import { RedisModule } from './modules/redis/redis.module';
+import { SocketModule } from './modules/socket/socket.module';
+import { ReviewModule } from './modules/review/review.module';
 
 @Module({
   imports: [
@@ -43,7 +46,10 @@ import { StatisticsModule } from './modules/statistics/statistics.module';
     TicketModule,
     TasksModule,
     PaymentModule,
-    StatisticsModule
+    StatisticsModule,
+    RedisModule,
+    SocketModule,
+    ReviewModule
   ],
   controllers: [AppController],
   providers: [AppService],
