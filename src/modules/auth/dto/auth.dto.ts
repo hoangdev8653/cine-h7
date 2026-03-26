@@ -22,10 +22,7 @@ export class LoginDto {
     password: string;
 }
 
-export class RefreshTokenDto {
-    @IsNotEmpty({ message: 'Refresh token không được để trống' })
-    refreshToken: string;
-}
+
 
 export class GoogleLoginDto {
     @IsNotEmpty({ message: 'Google token không được để trống' })

@@ -1,5 +1,6 @@
 import { Entity, Column, PrimaryGeneratedColumn, OneToMany, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 // import { UserStatus } from '../../common/enums/status.enum';
+import { Review } from '../../review/entities/review.entity';
 
 @Entity('users')
 export class User {
@@ -45,6 +46,9 @@ export class User {
 
     @Column({ nullable: true })
     avatar: string;
+
+    @OneToMany(() => Review, review => review.user)
+    reviews: Review[];
 
     @CreateDateColumn()
     created_at: Date;

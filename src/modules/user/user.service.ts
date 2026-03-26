@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { User } from "./entities/user.entity";
 import { ILike, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { PaginationDto, UpdateUserDto } from './dto/user.dto';
+import { PaginationDto, UpdateRoleDto, UpdateUserDto } from './dto/user.dto';
 import { pagination } from 'src/utils/pagination';
 
 @Injectable()
@@ -32,6 +32,16 @@ export class UserService {
     async updateUser(id: string, updateUserDto: UpdateUserDto) {
         await this.userRepository.update(id, updateUserDto);
         return await this.getUserById(id);
+    }
+
+    async updateRole(id: string, updateRoleDto: UpdateRoleDto) {
+        const user = await this.getUserById(id);
+        if (!user) {
+            throw new Error('User not found');
+        }
+        user.role = updateRoleDto.role;
+        await this.userRepository.save(user);
+        return user;
     }
 
     async deleteUser(id: string) {

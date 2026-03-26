@@ -19,6 +19,11 @@ export class PaginationDto {
     search?: string;
 }
 
+export class UpdateRoleDto {
+    @IsEnum(['ADMIN', 'EMPLOYEE'])
+    role: 'ADMIN' | 'EMPLOYEE';
+}
+
 export class UpdateUserDto {
     @IsOptional()
     @IsString()
