@@ -32,8 +32,16 @@ export class OrderController {
   }
 
   @Get()
-  async getAllOrders(@Query() paginationDto: PaginationDto) {
-    return await this.orderService.getAllOrders(paginationDto);
+  async getAllOrders(@Query() paginationDto: PaginationDto, @Req() req: any) {
+    const hasQueryParams = Object.keys(req.query).length > 0;
+    return await this.orderService.getAllOrders(paginationDto, hasQueryParams);
+  }
+
+  @Get('getOrderByUser')
+  @UseGuards(JwtAuthGuard)
+  async getOrdersByUserId(@Req() req: { user: { id: string } }) {
+    const userId = req.user.id;
+    return await this.orderService.getOrdersByUserId(userId);
   }
 
   @Get(':id')

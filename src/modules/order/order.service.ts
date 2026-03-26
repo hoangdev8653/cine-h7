@@ -88,7 +88,6 @@ export class OrderService {
       });
 
       const savedOrder = await queryRunner.manager.save(order);
-      console.log(savedOrder.id);
 
       const tickets = seats.map((seat) => {
         return queryRunner.manager.create(Ticket, {
@@ -128,20 +127,53 @@ export class OrderService {
     }
   }
 
-  async getAllOrders(paginationDto: PaginationDto) {
+  async getAllOrders(paginationDto: PaginationDto, hasQueryParams: boolean) {
     const { skip, take, page, limit } = pagination(paginationDto.page ?? 1, paginationDto.limit ?? 10);
     const search = paginationDto.search;
+    if (hasQueryParams) {
+      const [orders, total] = await this.orderRepository.findAndCount({
+        relations: ['user'],
+        skip,
+        take,
+        where: search ? [
+          { transaction_id: ILike(`%${search}%`) },
+          { user: { name: ILike(`%${search}%`) } },
+          { user: { email: ILike(`%${search}%`) } },
+        ] : {},
+        order: { created_at: 'DESC' },
+        select: {
+          user: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+          },
+        },
+      });
+      return { orders, total, page, limit, totalPages: Math.ceil(total / limit) };
 
-    const [orders, total] = await this.orderRepository.findAndCount({
-      relations: ['user'],
-      skip,
-      take,
-      where: search ? [
-        { transaction_id: ILike(`%${search}%`) },
-        { user: { name: ILike(`%${search}%`) } },
-        { user: { email: ILike(`%${search}%`) } },
-      ] : {},
-      order: { created_at: 'DESC' },
+    } else {
+      const orders = await this.orderRepository.find({
+        relations: ['user'],
+        order: { created_at: 'DESC' },
+        select: {
+          user: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+          },
+        },
+      });
+      return orders;
+    }
+
+  }
+
+  async getOrdersByUserId(userId: string) {
+    const orders = await this.orderRepository.find({
+      where: { userId },
+      relations: ['tickets'],
       select: {
         user: {
           id: true,
@@ -151,7 +183,7 @@ export class OrderService {
         },
       },
     });
-    return { orders, total, page, limit, totalPages: Math.ceil(total / limit) };
+    return orders;
   }
 
   async getOrderById(id: string): Promise<Order> {

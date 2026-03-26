@@ -6,8 +6,10 @@ import { Ticket } from '../ticket/entities/ticket.entity';
 import { SeatService } from './seat.service';
 import { SeatController } from './seat.controller';
 
+import { RedisModule } from '../redis/redis.module';
+
 @Module({
-  imports: [TypeOrmModule.forFeature([Seat, Showtime, Ticket])],
+  imports: [TypeOrmModule.forFeature([Seat, Showtime, Ticket]), RedisModule],
   controllers: [SeatController],
   providers: [SeatService],
   exports: [SeatService, TypeOrmModule],

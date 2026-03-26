@@ -4,6 +4,7 @@ import { In, Repository } from 'typeorm';
 import { Seat } from './entities/seat.entity';
 import { Showtime } from '../showtime/entities/showtime.entity';
 import { Ticket } from '../ticket/entities/ticket.entity';
+import { RedisService } from '../redis/redis.service';
 
 @Injectable()
 export class SeatService {
@@ -14,6 +15,7 @@ export class SeatService {
     private readonly showtimeRepository: Repository<Showtime>,
     @InjectRepository(Ticket)
     private readonly ticketRepository: Repository<Ticket>,
+    private readonly redisService: RedisService,
   ) { }
 
   async getAllSeatsByRoom(roomId: string, showtimeId?: string) {
@@ -33,9 +35,13 @@ export class SeatService {
     });
     const bookedSeatIds = new Set(bookedTickets.map((t) => t.seatId));
 
+    const lockKeys = await this.redisService.getKeys(`seat_lock:${showtimeId}:*`);
+    const lockedSeatIds = new Set(lockKeys.map((key) => key.split(':').pop()));
+
     return seats.map((seat) => ({
       ...seat,
       isBooked: bookedSeatIds.has(seat.id),
+      isLocking: lockedSeatIds.has(seat.id),
     }));
   }
 
@@ -59,9 +65,13 @@ export class SeatService {
     });
     const bookedSeatIds = new Set(bookedTickets.map((t) => t.seatId));
 
+    const lockKeys = await this.redisService.getKeys(`seat_lock:${showtimeId}:*`);
+    const lockedSeatIds = new Set(lockKeys.map((key) => key.split(':').pop()));
+
     return seats.map((seat) => ({
       ...seat,
       isBooked: bookedSeatIds.has(seat.id),
+      isLocking: lockedSeatIds.has(seat.id),
     }));
   }
 
