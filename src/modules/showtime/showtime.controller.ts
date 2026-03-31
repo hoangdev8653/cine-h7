@@ -7,16 +7,21 @@ import {
   Param,
   Delete,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { ShowtimeService } from './showtime.service';
-import { CreateShowtimeDto } from './dto/create-showtime.dto';
-import { UpdateShowtimeDto } from './dto/update-showtime.dto';
+import { CreateShowtimeDto, UpdateShowtimeDto } from './dto/showtime';
 import { PaginationDto } from '../user/dto/user.dto';
+import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
+import { RolesGuard } from 'src/guards/role.guard';
+import { Roles, UserRole } from 'src/common/enum/user.enum';
 
 @Controller('showtime')
 export class ShowtimeController {
   constructor(private readonly showtimeService: ShowtimeService) { }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   @Post()
   async createShowtime(@Body() createShowtimeDto: CreateShowtimeDto) {
     return await this.showtimeService.createShowtime(createShowtimeDto);
@@ -37,6 +42,8 @@ export class ShowtimeController {
     return await this.showtimeService.getShowtimeById(id);
   }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   @Patch(':id')
   async updateShowtime(
     @Param('id') id: string,
@@ -45,6 +52,8 @@ export class ShowtimeController {
     return await this.showtimeService.updateShowtime(id, updateShowtimeDto);
   }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   @Delete(':id')
   async deleteShowtime(@Param('id') id: string) {
     return await this.showtimeService.deleteShowtime(id);

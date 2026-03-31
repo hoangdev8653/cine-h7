@@ -2,8 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ILike, Repository } from 'typeorm';
 import { Showtime } from './entities/showtime.entity';
-import { CreateShowtimeDto } from './dto/create-showtime.dto';
-import { UpdateShowtimeDto } from './dto/update-showtime.dto';
+import { CreateShowtimeDto, UpdateShowtimeDto } from './dto/showtime';
 import { PaginationDto } from '../user/dto/user.dto';
 import { pagination } from 'src/utils/pagination';
 

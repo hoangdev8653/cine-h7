@@ -1,4 +1,6 @@
 import { IsNotEmpty, IsNumber, IsString, IsOptional, Min, Max, IsUUID } from 'class-validator';
+import { PartialType, OmitType } from '@nestjs/mapped-types';
+
 
 export class CreateReviewDto {
     @IsNotEmpty()
@@ -15,3 +17,6 @@ export class CreateReviewDto {
     @IsString()
     comment?: string;
 }
+
+
+export class UpdateReviewDto extends PartialType(OmitType(CreateReviewDto, ['movieId'] as const)) { }

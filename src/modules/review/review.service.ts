@@ -2,8 +2,7 @@ import { Injectable, NotFoundException, BadRequestException } from '@nestjs/comm
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Review } from './entities/review.entity';
-import { CreateReviewDto } from './dto/create-review.dto';
-import { UpdateReviewDto } from './dto/update-review.dto';
+import { CreateReviewDto, UpdateReviewDto } from './dto/review.dto';
 
 @Injectable()
 export class ReviewService {
@@ -42,7 +41,7 @@ export class ReviewService {
                 user: {
                     id: true,
                     name: true,
-                    avatar: true
+                    avarta: true
                 }
             },
             order: { created_at: 'DESC' }
@@ -62,7 +61,7 @@ export class ReviewService {
                 user: {
                     id: true,
                     name: true,
-                    avatar: true
+                    avarta: true
                 }
             },
             skip: (page - 1) * limit,

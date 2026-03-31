@@ -1,4 +1,6 @@
 import { IsNotEmpty, IsUUID, IsDateString, IsNumber, Min } from 'class-validator';
+import { PartialType } from '@nestjs/mapped-types';
+
 
 export class CreateShowtimeDto {
     @IsNotEmpty()
@@ -18,3 +20,7 @@ export class CreateShowtimeDto {
     @Min(0)
     price: number;
 }
+
+
+export class UpdateShowtimeDto extends PartialType(CreateShowtimeDto) { }
+

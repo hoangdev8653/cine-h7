@@ -9,8 +9,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource, In, ILike } from 'typeorm';
 import { Order } from './entities/order.entity';
-import { CreateOrderDto } from './dto/create-order.dto';
-import { UpdateOrderDto } from './dto/update-order.dto';
+import { CreateOrderDto, UpdateOrderDto } from './dto/order.dto';
 import { Showtime } from '../showtime/entities/showtime.entity';
 import { Seat } from '../seat/entities/seat.entity';
 import { Ticket } from '../ticket/entities/ticket.entity';

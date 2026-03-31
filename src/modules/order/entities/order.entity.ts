@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, OneToMany, Index } from 'typeorm';
 import { User } from '../../user/entities/user.entity';
 import { Ticket } from '../../ticket/entities/ticket.entity';
 
@@ -7,12 +7,14 @@ export class Order {
     @PrimaryGeneratedColumn('uuid')
     id: string;
 
+    @Index('IDX_ORDER_USER_ID')
     @Column({ name: 'user_id' })
     userId: string;
 
     @Column({ type: 'decimal', precision: 10, scale: 2 })
     total_amount: number;
 
+    @Index('IDX_ORDER_STATUS')
     @Column({
         type: 'varchar',
         comment: 'PENDING, PAID, CANCELLED, EXPIRED',
