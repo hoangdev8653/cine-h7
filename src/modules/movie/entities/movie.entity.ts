@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, OneToMany } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, OneToMany, Index } from 'typeorm';
 import { Review } from '../../review/entities/review.entity';
 
 @Entity('movies')
@@ -6,6 +6,7 @@ export class Movie {
     @PrimaryGeneratedColumn('uuid')
     id: string;
 
+    @Index('IDX_MOVIE_TITLE')
     @Column({ type: 'varchar', nullable: false })
     title: string;
 
@@ -18,6 +19,7 @@ export class Movie {
     @Column({ type: 'text', nullable: true })
     description: string;
 
+    @Index('IDX_MOVIE_RELEASE_DATE')
     @Column({ type: 'timestamp', nullable: true })
     releaseDate: Date;
 
@@ -33,6 +35,7 @@ export class Movie {
     @Column({ type: 'boolean', default: false })
     comingSoon: boolean;
 
+    @Index('IDX_MOVIE_IS_SHOWING')
     @Column({ type: 'boolean', default: true })
     isShowing: boolean;
 

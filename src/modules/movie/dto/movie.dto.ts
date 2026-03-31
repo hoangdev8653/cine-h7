@@ -1,5 +1,8 @@
 import { IsNotEmpty, IsString, IsOptional, IsBoolean, IsInt, IsDateString } from 'class-validator';
 import { Type, Transform } from 'class-transformer';
+import { PartialType } from '@nestjs/mapped-types';
+
+
 
 export class CreateMovieDto {
     @IsNotEmpty()
@@ -46,3 +49,6 @@ export class CreateMovieDto {
     @IsBoolean()
     isShowing?: boolean;
 }
+
+
+export class UpdateMovieDto extends PartialType(CreateMovieDto) { }

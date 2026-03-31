@@ -2,8 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ILike, Repository } from 'typeorm';
 import { TheaterSystem } from './entities/theater-system.entity';
-import { CreateTheaterSystemDto } from './dto/create-theater-system.dto';
-import { UpdateTheaterSystemDto } from './dto/update-theater-system.dto';
+import { CreateTheaterSystemDto, UpdateTheaterSystemDto } from './dto/theater-system.dto';
 import { CloudinaryService } from "../cloudinary/cloudinary.service"
 import { PaginationDto } from '../user/dto/user.dto';
 import { pagination } from 'src/utils/pagination';

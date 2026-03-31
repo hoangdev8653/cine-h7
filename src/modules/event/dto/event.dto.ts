@@ -2,6 +2,8 @@ import { IsNotEmpty, IsString, IsOptional, IsBoolean, IsObject } from 'class-val
 import { BadRequestException } from '@nestjs/common';
 import { Transform } from 'class-transformer';
 import type { EventContent } from '../entities/event.entity';
+import { PartialType } from '@nestjs/mapped-types';
+
 
 export class CreateEventDto {
     @IsNotEmpty()
@@ -36,3 +38,6 @@ export class CreateEventDto {
     @IsBoolean()
     is_active?: boolean;
 }
+
+
+export class UpdateEventDto extends PartialType(CreateEventDto) { }

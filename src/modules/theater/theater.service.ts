@@ -2,9 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ILike, Repository } from 'typeorm';
 import { Theater } from './entities/theater.entity';
-import { CreateTheaterDto } from './dto/create-theater.dto';
-import { UpdateTheaterDto } from './dto/update-theater.dto';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { CreateTheaterDto, UpdateTheaterDto } from './dto/theater.dto';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
 import { PaginationDto } from '../user/dto/user.dto';
 import { pagination } from 'src/utils/pagination';
@@ -15,7 +13,7 @@ export class TheaterService {
     @InjectRepository(Theater)
     private readonly theaterRepository: Repository<Theater>,
     private readonly cloudinaryService: CloudinaryService,
-  ) {}
+  ) { }
 
   async createTheater(
     createTheaterDto: CreateTheaterDto,
@@ -44,8 +42,8 @@ export class TheaterService {
         take,
         where: search
           ? {
-              name: ILike(`%${search}%`),
-            }
+            name: ILike(`%${search}%`),
+          }
           : {},
         relations: ['system'],
         order: { created_at: 'DESC' },

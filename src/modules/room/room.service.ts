@@ -2,8 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import { Room } from './entities/room.entity';
-import { CreateRoomDto } from './dto/create-room.dto';
-import { UpdateRoomDto } from './dto/update-room.dto';
+import { CreateRoomDto, UpdateRoomDto } from './dto/room';
 import { Seat } from '../seat/entities/seat.entity';
 
 @Injectable()

@@ -2,8 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ILike, Repository } from 'typeorm';
 import { Event } from './entities/event.entity';
-import { CreateEventDto } from './dto/create-event.dto';
-import { UpdateEventDto } from './dto/update-event.dto';
+import { CreateEventDto, UpdateEventDto } from './dto/event.dto';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
 import { PaginationDto } from '../user/dto/user.dto';
 import { pagination } from 'src/utils/pagination';
@@ -14,7 +13,7 @@ export class EventService {
     @InjectRepository(Event)
     private readonly eventRepository: Repository<Event>,
     private readonly cloudinaryService: CloudinaryService,
-  ) {}
+  ) { }
 
   async createEvent(
     createEventDto: CreateEventDto,
@@ -43,8 +42,8 @@ export class EventService {
         take,
         where: search
           ? {
-              title: ILike(`%${search}%`),
-            }
+            title: ILike(`%${search}%`),
+          }
           : {},
         order: { created_at: 'DESC' },
       });

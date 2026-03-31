@@ -1,4 +1,6 @@
 import { IsNotEmpty, IsString, IsOptional, IsUUID } from 'class-validator';
+import { PartialType } from '@nestjs/mapped-types';
+
 
 export class CreateTheaterDto {
     @IsNotEmpty()
@@ -17,3 +19,6 @@ export class CreateTheaterDto {
     @IsString()
     logo?: string;
 }
+
+export class UpdateTheaterDto extends PartialType(CreateTheaterDto) { }
+

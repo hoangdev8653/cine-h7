@@ -1,14 +1,19 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe, UseInterceptors, UploadedFiles, Query, Req } from '@nestjs/common';
 import { MovieService } from './movie.service';
-import { CreateMovieDto } from './dto/create-movie.dto';
-import { UpdateMovieDto } from './dto/update-movie.dto';
+import { CreateMovieDto, UpdateMovieDto } from './dto/movie.dto';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { PaginationDto } from '../user/dto/user.dto';
+import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
+import { RolesGuard } from '../../guards/role.guard';
+import { Roles, UserRole } from '../../common/enum/user.enum';
+import { UseGuards } from '@nestjs/common';
 
 @Controller('movie')
 export class MovieController {
     constructor(private readonly movieService: MovieService) { }
 
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.ADMIN)
     @Post()
     @UseInterceptors(FileFieldsInterceptor([
         { name: 'poster', maxCount: 1 },
@@ -39,11 +44,15 @@ export class MovieController {
         return await this.movieService.getMovieBySlug(slug);
     }
 
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.ADMIN)
     @Patch(':id')
     async updateMovie(@Param('id', ParseUUIDPipe) id: string, @Body() updateMovieDto: UpdateMovieDto) {
         return await this.movieService.updateMovie(id, updateMovieDto);
     }
 
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.ADMIN)
     @Delete(':id')
     async deleteMovie(@Param('id', ParseUUIDPipe) id: string) {
         return await this.movieService.deleteMovie(id);

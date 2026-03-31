@@ -11,17 +11,22 @@ import {
   UseInterceptors,
   UploadedFile,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { TheaterService } from './theater.service';
-import { CreateTheaterDto } from './dto/create-theater.dto';
-import { UpdateTheaterDto } from './dto/update-theater.dto';
+import { CreateTheaterDto, UpdateTheaterDto } from './dto/theater.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { PaginationDto } from '../user/dto/user.dto';
+import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
+import { RolesGuard } from 'src/guards/role.guard';
+import { Roles, UserRole } from 'src/common/enum/user.enum';
 
 @Controller('theater')
 export class TheaterController {
   constructor(private readonly theaterService: TheaterService) { }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   @Post()
   @UseInterceptors(FileInterceptor('logo'))
   async createTheater(
@@ -45,6 +50,8 @@ export class TheaterController {
     return await this.theaterService.getTheaterById(id);
   }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   @Patch(':id')
   @UseInterceptors(FileInterceptor('logo'))
   async updateTheater(
@@ -55,6 +62,8 @@ export class TheaterController {
     return await this.theaterService.updateTheater(id, updateTheaterDto, file);
   }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   @Delete(':id')
   async deleteTheater(@Param('id', ParseUUIDPipe) id: string) {
     return await this.theaterService.deleteTheater(id);

@@ -1,4 +1,6 @@
 import { IsNotEmpty, IsString, IsEnum, IsOptional, IsInt, Min, IsUUID } from 'class-validator';
+import { PartialType } from '@nestjs/mapped-types';
+
 
 export class CreateRoomDto {
     @IsNotEmpty()
@@ -18,3 +20,5 @@ export class CreateRoomDto {
     @Min(1)
     total_seats?: number;
 }
+
+export class UpdateRoomDto extends PartialType(CreateRoomDto) { }
