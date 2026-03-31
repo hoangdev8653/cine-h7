@@ -49,7 +49,7 @@ import { ReviewModule } from './modules/review/review.module';
     StatisticsModule,
     RedisModule,
     SocketModule,
-    ReviewModule
+    ReviewModule,
   ],
   controllers: [AppController],
   providers: [AppService],

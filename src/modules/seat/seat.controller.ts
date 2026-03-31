@@ -1,5 +1,8 @@
-import { Controller, Get, Param, Patch, Body, Query } from '@nestjs/common';
+import { Controller, Get, Param, Patch, Body, Query, UseGuards } from '@nestjs/common';
 import { SeatService } from './seat.service';
+import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
+import { RolesGuard } from 'src/guards/role.guard';
+import { Roles, UserRole } from 'src/common/enum/user.enum';
 
 @Controller('seat')
 export class SeatController {
@@ -23,6 +26,8 @@ export class SeatController {
     return await this.seatService.getSeatById(id);
   }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   @Patch(':id/status')
   async updateSeatStatus(@Param('id') id: string, @Body('isActive') isActive: boolean) {
     return await this.seatService.updateSeatStatus(id, isActive);

@@ -6,6 +6,7 @@ export const generateToken = (jwtService: JwtService, payload: any) => {
     });
     const refresh_token = jwtService.sign(payload, {
         expiresIn: '7d',
+        secret: process.env.JWT_REFRESH_SECRET,
     });
     return { access_token, refresh_token };
 }

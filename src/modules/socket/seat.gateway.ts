@@ -46,8 +46,10 @@ export class SeatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ) {
     const { showtimeId, seatId, userId } = data;
     const lockKey = `seat_lock:${showtimeId}:${seatId}`;
-    console.log(1111);
-    const locked = await this.redisService.setLock(lockKey, userId, 600);
+    console.log("showtimeId", showtimeId);
+    console.log("seatId", seatId);
+    console.log("userId", userId);
+    const locked = await this.redisService.setLock(lockKey, userId, 300);
 
     if (locked) {
       this.server.to(`showtime_${showtimeId}`).emit('seatSelected', {
@@ -67,11 +69,11 @@ export class SeatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() data: { showtimeId: string; seatId: string; userId: string },
   ) {
     const { showtimeId, seatId, userId } = data;
+    console.log("showtimeId", showtimeId);
+    console.log("seatId", seatId);
+    console.log("userId", userId);
     const lockKey = `seat_lock:${showtimeId}:${seatId}`;
-    console.log(222);
-
     const released = await this.redisService.releaseLock(lockKey, userId);
-
     if (released) {
       this.server.to(`showtime_${showtimeId}`).emit('seatUnselected', {
         seatId,

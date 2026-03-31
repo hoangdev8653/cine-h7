@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryGeneratedColumn, OneToMany, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, OneToMany, CreateDateColumn, UpdateDateColumn, Index } from 'typeorm';
 // import { UserStatus } from '../../common/enums/status.enum';
 import { Review } from '../../review/entities/review.entity';
 
@@ -10,6 +10,7 @@ export class User {
     @Column()
     name: string;
 
+    @Index('IDX_USER_EMAIL')
     @Column()
     email: string;
 
@@ -22,13 +23,6 @@ export class User {
         default: 'EMPLOYEE',
     })
     role: 'ADMIN' | 'EMPLOYEE';
-
-    // @Column({
-    //     type: 'enum',
-    //     enum: UserStatus,
-    //     default: UserStatus.ACTIVE,
-    // })
-    // status: UserStatus;
 
     @Column({
         type: 'enum',
@@ -45,7 +39,7 @@ export class User {
     auth_method: 'LOCAL' | 'GOOGLE';
 
     @Column({ nullable: true })
-    avatar: string;
+    avarta: string;
 
     @OneToMany(() => Review, review => review.user)
     reviews: Review[];
