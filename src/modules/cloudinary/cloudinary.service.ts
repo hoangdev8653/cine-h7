@@ -28,4 +28,17 @@ export class CloudinaryService {
             },
         );
     }
+
+    getOptimizedUrl(url: string, options: { width?: number; height?: number; crop?: string } = {}) {
+        if (!url || !url.includes('cloudinary.com')) return url;
+
+        const { width, height, crop = 'fill' } = options;
+
+        let transformation = 'q_auto,f_auto';
+        if (width) transformation += `,w_${width}`;
+        if (height) transformation += `,h_${height}`;
+        if (width || height) transformation += `,c_${crop}`;
+
+        return url.replace('/upload/', `/upload/${transformation}/`);
+    }
 }

@@ -20,8 +20,14 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
       console.error('Redis Client Error:', err.message);
     });
 
-    this.redisClient.on('connect', () => {
+    this.redisClient.on('connect', async () => {
       console.log('Redis Client Connected');
+      try {
+        await this.redisClient.config('SET', 'maxmemory-policy', 'noeviction');
+        console.log('Redis eviction policy set to noeviction');
+      } catch (err) {
+        console.error('Failed to set Redis eviction policy:', err.message);
+      }
     });
   }
 

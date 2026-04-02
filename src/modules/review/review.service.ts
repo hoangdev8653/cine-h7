@@ -73,7 +73,7 @@ export class ReviewService {
             data,
             total,
             page,
-            last_page: Math.ceil(total / limit) || 1
+            totalPages: Math.ceil(total / limit) || 1
         };
     }
 

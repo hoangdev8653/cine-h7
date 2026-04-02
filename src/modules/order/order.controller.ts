@@ -11,6 +11,7 @@ import {
   Req,
   Query,
 } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { OrderService } from './order.service';
 import { CreateOrderDto, UpdateOrderDto } from './dto/order.dto';
 import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
@@ -22,6 +23,7 @@ export class OrderController {
 
   @Post()
   @UseGuards(JwtAuthGuard)
+  @Throttle({ default: { limit: 2, ttl: 60000 } })
   async createOrder(
     @Body() createOrderDto: CreateOrderDto,
     @Req() req: { user: { id: string } },
