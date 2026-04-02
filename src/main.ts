@@ -9,8 +9,12 @@ import { TransformInterceptor } from './common/interceptors/transform.intercepto
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import morgan from 'morgan';
 
+import { winstonConfig } from './config/winston.config';
+
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    logger: winstonConfig,
+  });
   app.enableCors(corsConfig);
   app.use(cookieParser());
   app.use(morgan('dev'));
@@ -29,10 +33,20 @@ async function bootstrap() {
   app.useGlobalFilters(new HttpExceptionFilter());
 
   const config = new DocumentBuilder()
-    .setTitle('Digital Asset Manager API')
-    .setDescription('The Digital Asset Manager API description')
+    .setTitle('CineH7 API')
+    .setDescription('Comprehensive API documentation for the CineH7 movie booking system')
     .setVersion('1.0')
-    .addBearerAuth()
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        name: 'JWT',
+        description: 'Enter JWT token',
+        in: 'header',
+      },
+      'JWT-auth',
+    )
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document);

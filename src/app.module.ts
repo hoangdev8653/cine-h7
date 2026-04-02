@@ -1,8 +1,13 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ScheduleModule } from '@nestjs/schedule';
 import { BullModule } from '@nestjs/bullmq';
+import { BullBoardModule } from '@bull-board/nestjs';
+import { ExpressAdapter } from '@bull-board/express';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { ThrottlerStorageRedisService } from '@nest-lab/throttler-storage-redis';
+import { APP_GUARD } from '@nestjs/core';
 import { typeOrmConfig } from './config/database.config';
 import { redisConfig } from './config/redis.config';
 import { AppController } from './app.controller';
@@ -25,12 +30,17 @@ import { StatisticsModule } from './modules/statistics/statistics.module';
 import { RedisModule } from './modules/redis/redis.module';
 import { SocketModule } from './modules/socket/socket.module';
 import { ReviewModule } from './modules/review/review.module';
+import { AuditLogsModule } from './modules/audit-logs/audit-logs.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRootAsync(typeOrmConfig),
     BullModule.forRootAsync(redisConfig),
+    BullBoardModule.forRoot({
+      route: '/admin/queues',
+      adapter: ExpressAdapter,
+    }),
     ScheduleModule.forRoot(),
     AuthModule,
     UserModule,
@@ -50,8 +60,32 @@ import { ReviewModule } from './modules/review/review.module';
     RedisModule,
     SocketModule,
     ReviewModule,
+    AuditLogsModule,
+    ThrottlerModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        throttlers: [
+          {
+            ttl: 60000, // 1 minute
+            limit: 100,
+          },
+        ],
+        storage: new ThrottlerStorageRedisService({
+          host: config.get('REDIS_HOST', 'localhost'),
+          port: parseInt(config.get('REDIS_PORT', '6379'), 10),
+          password: config.get('REDIS_PASSWORD'),
+        }),
+      }),
+    }),
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+  ],
 })
 export class AppModule { }

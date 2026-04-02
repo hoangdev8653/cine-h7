@@ -18,6 +18,7 @@ import { User } from '../user/entities/user.entity';
 import { MailService } from 'src/config/mail.config';
 import { OAuth2Client } from 'google-auth-library';
 import { generateToken } from 'src/utils/generateToken';
+import { AuditLogsService } from '../audit-logs/audit-logs.service';
 
 @Injectable()
 export class AuthService {
@@ -29,13 +30,14 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly mailService: MailService,
     private readonly configService: ConfigService,
+    private readonly auditLogsService: AuditLogsService,
   ) {
     this.googleClient = new OAuth2Client(
       this.configService.get<string>('GOOGLE_CLIENT_ID'),
     );
   }
 
-  async register(registerDto: RegisterDto) {
+  async register(registerDto: RegisterDto, ip?: string, userAgent?: string) {
     const existingUser = await this.userRepository.findOne({
       where: { email: registerDto.email },
     });
@@ -71,10 +73,21 @@ export class AuthService {
       password: hashedPassword,
       auth_method: 'LOCAL',
     });
+
+    await this.auditLogsService.create({
+      module: 'AUTH',
+      action: 'REGISTER',
+      userId: user.id,
+      username: user.name,
+      details: `Người dùng mới đăng ký: ${user.email}`,
+      ipAddress: ip,
+      userAgent: userAgent,
+    });
+
     return user;
   }
 
-  async login(loginDto: LoginDto) {
+  async login(loginDto: LoginDto, ip?: string, userAgent?: string) {
     const user = await this.userRepository.findOne({
       where: { email: loginDto.email },
     });
@@ -95,7 +108,8 @@ export class AuthService {
       this.jwtService,
       payload,
     );
-    return {
+
+    const result = {
       access_token,
       refresh_token,
       user: {
@@ -107,6 +121,18 @@ export class AuthService {
         avarta: user.avarta,
       },
     };
+
+    await this.auditLogsService.create({
+      module: 'AUTH',
+      action: 'LOGIN',
+      userId: user.id,
+      username: user.name,
+      details: `Người dùng đăng nhập thành công: ${user.email}`,
+      ipAddress: ip,
+      userAgent: userAgent,
+    });
+
+    return result;
   }
 
   async verifyGoogleToken(token: string) {
@@ -121,7 +147,7 @@ export class AuthService {
     }
   }
 
-  async googleLogin(googleLoginDto: GoogleLoginDto) {
+  async googleLogin(googleLoginDto: GoogleLoginDto, ip?: string, userAgent?: string) {
     const payloadFromGoogle = await this.verifyGoogleToken(
       googleLoginDto.googleToken,
     );
@@ -154,7 +180,7 @@ export class AuthService {
       payload,
     );
 
-    return {
+    const result = {
       user: {
         id: user.id,
         email: user.email,
@@ -165,6 +191,18 @@ export class AuthService {
       access_token,
       refresh_token,
     };
+
+    await this.auditLogsService.create({
+      module: 'AUTH',
+      action: 'LOGIN_GOOGLE',
+      userId: user.id,
+      username: user.name,
+      details: `Người dùng đăng nhập qua Google: ${user.email}`,
+      ipAddress: ip,
+      userAgent: userAgent,
+    });
+
+    return result;
   }
 
   async refresh(refreshToken: string) {
