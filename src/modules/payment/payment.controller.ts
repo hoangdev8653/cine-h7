@@ -1,13 +1,20 @@
-import { Controller, Post, Body, Req, Get, Query, Logger, Res } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Req,
+  Get,
+  Query,
+  Logger,
+  Res,
+} from '@nestjs/common';
 import { PaymentService } from './payment.service';
 import type { Response } from 'express';
-
 
 @Controller('payment')
 export class PaymentController {
   private readonly logger = new Logger(PaymentController.name);
-  constructor(private readonly paymentService: PaymentService) { }
-
+  constructor(private readonly paymentService: PaymentService) {}
 
   @Post('create-url')
   async createPaymentUrl(
@@ -22,7 +29,11 @@ export class PaymentController {
       req.socket?.remoteAddress ||
       '127.0.0.1';
 
-    if (clientIp === '::1' || clientIp === '::ffff:127.0.0.1' || Array.isArray(clientIp)) {
+    if (
+      clientIp === '::1' ||
+      clientIp === '::ffff:127.0.0.1' ||
+      Array.isArray(clientIp)
+    ) {
       clientIp = '127.0.0.1';
     }
 
@@ -75,6 +86,3 @@ export class PaymentController {
     return res.redirect(redirectUrl);
   }
 }
-
-
-

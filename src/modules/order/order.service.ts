@@ -25,12 +25,12 @@ export class OrderService {
     @Inject(forwardRef(() => PaymentService))
     private readonly paymentService: PaymentService,
     private dataSource: DataSource,
-  ) { }
+  ) {}
 
   async createOrder(
     createOrderDto: CreateOrderDto,
     userId: string,
-  ): Promise<Order> {
+  ): Promise<any> {
     const { showtimeId, seatIds } = createOrderDto;
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
@@ -109,7 +109,10 @@ export class OrderService {
       await queryRunner.manager.save(Ticket, tickets);
 
       await queryRunner.commitTransaction();
-      return savedOrder;
+      return {
+        order: savedOrder,
+        paymentUrl: paymentURL,
+      };
     } catch (err) {
       await queryRunner.rollbackTransaction();
       if (
@@ -127,18 +130,23 @@ export class OrderService {
   }
 
   async getAllOrders(paginationDto: PaginationDto, hasQueryParams: boolean) {
-    const { skip, take, page, limit } = pagination(paginationDto.page ?? 1, paginationDto.limit ?? 10);
+    const { skip, take, page, limit } = pagination(
+      paginationDto.page ?? 1,
+      paginationDto.limit ?? 10,
+    );
     const search = paginationDto.search;
     if (hasQueryParams) {
       const [orders, total] = await this.orderRepository.findAndCount({
         relations: ['user'],
         skip,
         take,
-        where: search ? [
-          { transaction_id: ILike(`%${search}%`) },
-          { user: { name: ILike(`%${search}%`) } },
-          { user: { email: ILike(`%${search}%`) } },
-        ] : {},
+        where: search
+          ? [
+              { transaction_id: ILike(`%${search}%`) },
+              { user: { name: ILike(`%${search}%`) } },
+              { user: { email: ILike(`%${search}%`) } },
+            ]
+          : {},
         order: { created_at: 'DESC' },
         select: {
           user: {
@@ -149,8 +157,13 @@ export class OrderService {
           },
         },
       });
-      return { orders, total, page, limit, totalPages: Math.ceil(total / limit) };
-
+      return {
+        orders,
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      };
     } else {
       const orders = await this.orderRepository.find({
         relations: ['user'],
@@ -166,7 +179,6 @@ export class OrderService {
       });
       return orders;
     }
-
   }
 
   async getOrdersByUserId(userId: string) {
