@@ -8,17 +8,20 @@ import {
   Post,
   Query,
   Req,
+  UploadedFiles,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { PaginationDto, UpdateRoleDto, UpdateUserDto } from './dto/user.dto';
 import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
 import { RolesGuard } from '../../guards/role.guard';
 import { Roles, UserRole } from '../../common/enum/user.enum';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
 
 @Controller('user')
 export class UserController {
-  constructor(private readonly userService: UserService) { }
+  constructor(private readonly userService: UserService) {}
 
   @Get('')
   // @Roles(UserRole.ADMIN)
@@ -51,14 +54,18 @@ export class UserController {
     return await this.userService.resetPassword(body.email, body.newPassword);
   }
 
-  @Patch(':id')
+  @Patch('update')
+  @UseInterceptors(FileFieldsInterceptor([{ name: 'avatar', maxCount: 1 }]))
   @UseGuards(JwtAuthGuard)
   async updateUser(
     @Req() req: { user: { id: string } },
     @Body() updateUserDto: UpdateUserDto,
+    @UploadedFiles()
+    files: { avatar?: Express.Multer.File[] },
   ) {
     const userId = req.user.id;
-    return await this.userService.updateUser(userId, updateUserDto);
+    const avatar = files?.avatar?.[0];
+    return await this.userService.updateUser(userId, updateUserDto, avatar);
   }
 
   @Delete(':id')

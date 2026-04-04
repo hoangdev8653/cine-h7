@@ -8,10 +8,8 @@ import { MailService } from 'src/config/mail.config';
 import { ConflictException, UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 
-// Mock bcrypt
 jest.mock('bcrypt');
 
-// Mock generateToken
 jest.mock('src/utils/generateToken', () => ({
   generateToken: jest.fn(() => ({
     access_token: 'mock-access-token',
@@ -22,7 +20,6 @@ jest.mock('src/utils/generateToken', () => ({
 describe('AuthService', () => {
   let authService: AuthService;
 
-  // Mock objects
   const mockUserRepository = {
     findOne: jest.fn(),
     save: jest.fn(),
@@ -49,7 +46,6 @@ describe('AuthService', () => {
     }),
   };
 
-  // Fake user data
   const mockUser: Partial<User> = {
     id: 'uuid-123',
     name: 'Test User',
@@ -58,7 +54,7 @@ describe('AuthService', () => {
     role: 'EMPLOYEE',
     status: 'ACTIVE',
     auth_method: 'LOCAL',
-    avarta: "mock-avarta",
+    avatar: "mock-avatar",
   };
 
   beforeEach(async () => {
@@ -74,13 +70,9 @@ describe('AuthService', () => {
 
     authService = module.get<AuthService>(AuthService);
 
-    // Reset all mocks before each test
     jest.clearAllMocks();
   });
 
-  // ─────────────────────────────────────────────
-  // REGISTER
-  // ─────────────────────────────────────────────
   describe('register', () => {
     const registerDto = {
       email: 'newuser@example.com',
@@ -89,7 +81,7 @@ describe('AuthService', () => {
     };
 
     it('should register a new user successfully', async () => {
-      mockUserRepository.findOne.mockResolvedValue(null); // no existing user
+      mockUserRepository.findOne.mockResolvedValue(null);
       (bcrypt.hash as jest.Mock).mockResolvedValue('hashed-password');
       mockUserRepository.save.mockResolvedValue({
         ...registerDto,
@@ -100,44 +92,35 @@ describe('AuthService', () => {
 
       const result = await authService.register(registerDto);
 
-      // Verify email duplicate check
       expect(mockUserRepository.findOne).toHaveBeenCalledWith({
         where: { email: registerDto.email },
       });
-      // Verify password was hashed
       expect(bcrypt.hash).toHaveBeenCalledWith(registerDto.password, 10);
-      // Verify welcome email was sent
       expect(mockMailService.sendMail).toHaveBeenCalledWith(
         registerDto.email,
         'Welcome to CineH7',
         expect.stringContaining(registerDto.name),
       );
-      // Verify user was saved with hashed password
       expect(mockUserRepository.save).toHaveBeenCalledWith({
         ...registerDto,
         password: 'hashed-password',
         auth_method: 'LOCAL',
       });
-      // Verify return value
       expect(result).toHaveProperty('id', 'uuid-new');
       expect(result.auth_method).toBe('LOCAL');
     });
 
     it('should throw ConflictException if email already exists', async () => {
-      mockUserRepository.findOne.mockResolvedValue(mockUser); // user already exists
+      mockUserRepository.findOne.mockResolvedValue(mockUser);
 
       await expect(authService.register(registerDto)).rejects.toThrow(
         ConflictException,
       );
-      // Should NOT hash or save
       expect(bcrypt.hash).not.toHaveBeenCalled();
       expect(mockUserRepository.save).not.toHaveBeenCalled();
     });
   });
 
-  // ─────────────────────────────────────────────
-  // LOGIN
-  // ─────────────────────────────────────────────
   describe('login', () => {
     const loginDto = {
       email: 'test@example.com',
@@ -157,7 +140,6 @@ describe('AuthService', () => {
         loginDto.password,
         mockUser.password,
       );
-      // Should return tokens and user info
       expect(result).toHaveProperty('access_token', 'mock-access-token');
       expect(result).toHaveProperty('refresh_token', 'mock-refresh-token');
       expect(result.user).toEqual({
@@ -166,7 +148,7 @@ describe('AuthService', () => {
         role: mockUser.role,
         name: mockUser.name,
         status: mockUser.status,
-        avarta: mockUser.avarta,
+        avatar: mockUser.avatar,
       });
     });
 
@@ -181,7 +163,7 @@ describe('AuthService', () => {
 
     it('should throw UnauthorizedException if password is wrong', async () => {
       mockUserRepository.findOne.mockResolvedValue(mockUser);
-      (bcrypt.compare as jest.Mock).mockResolvedValue(false); // wrong password
+      (bcrypt.compare as jest.Mock).mockResolvedValue(false);
 
       await expect(authService.login(loginDto)).rejects.toThrow(
         UnauthorizedException,
@@ -189,9 +171,6 @@ describe('AuthService', () => {
     });
   });
 
-  // ─────────────────────────────────────────────
-  // REFRESH TOKEN
-  // ─────────────────────────────────────────────
   describe('refresh', () => {
     it('should return a new access_token with a valid refresh token', async () => {
       mockJwtService.verify.mockReturnValue({

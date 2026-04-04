@@ -7,11 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { UserService } from '../user/user.service';
-import {
-  RegisterDto,
-  LoginDto,
-  GoogleLoginDto,
-} from './dto/auth.dto';
+import { RegisterDto, LoginDto, GoogleLoginDto } from './dto/auth.dto';
 import * as bcrypt from 'bcrypt';
 import { Repository } from 'typeorm';
 import { User } from '../user/entities/user.entity';
@@ -118,7 +114,7 @@ export class AuthService {
         role: user.role,
         name: user.name,
         status: user.status,
-        avarta: user.avarta,
+        avatar: user.avatar,
       },
     };
 
@@ -147,7 +143,11 @@ export class AuthService {
     }
   }
 
-  async googleLogin(googleLoginDto: GoogleLoginDto, ip?: string, userAgent?: string) {
+  async googleLogin(
+    googleLoginDto: GoogleLoginDto,
+    ip?: string,
+    userAgent?: string,
+  ) {
     const payloadFromGoogle = await this.verifyGoogleToken(
       googleLoginDto.googleToken,
     );
@@ -155,7 +155,7 @@ export class AuthService {
       throw new UnauthorizedException('Không thể lấy thông tin từ Google');
     }
 
-    const { email, name, picture: avarta } = payloadFromGoogle;
+    const { email, name, picture: avatar } = payloadFromGoogle;
 
     let user = await this.userRepository.findOne({ where: { email } });
 
@@ -163,14 +163,14 @@ export class AuthService {
       user = this.userRepository.create({
         email,
         name,
-        avarta,
+        avatar: avatar,
         auth_method: 'GOOGLE',
         password: '',
       });
       await this.userRepository.save(user);
     } else {
-      if (avarta && user.avarta !== avarta) {
-        await this.userRepository.update(user.id, { avarta: avarta });
+      if (avatar && user.avatar !== avatar) {
+        await this.userRepository.update(user.id, { avatar: avatar });
       }
     }
 
@@ -186,7 +186,7 @@ export class AuthService {
         email: user.email,
         name: user.name,
         role: user.role,
-        avarta: user.avarta,
+        avatar: user.avatar,
       },
       access_token,
       refresh_token,

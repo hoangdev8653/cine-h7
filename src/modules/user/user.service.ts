@@ -5,13 +5,17 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { PaginationDto, UpdateRoleDto, UpdateUserDto } from './dto/user.dto';
 import { pagination } from 'src/utils/pagination';
 import { MailService } from '../../config/mail.config';
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UserService {
   @InjectRepository(User)
   private userRepository: Repository<User>;
-  constructor(private readonly mailService: MailService) { }
+  constructor(
+    private readonly mailService: MailService,
+    private readonly cloudinaryService: CloudinaryService,
+  ) {}
 
   async getAllUsers(paginationDto: PaginationDto) {
     const { skip, take, page, limit } = pagination(
@@ -34,7 +38,15 @@ export class UserService {
     return await this.userRepository.findOne({ where: { id } });
   }
 
-  async updateUser(id: string, updateUserDto: UpdateUserDto) {
+  async updateUser(
+    id: string,
+    updateUserDto: UpdateUserDto,
+    avatar?: Express.Multer.File,
+  ) {
+    if (avatar) {
+      const uploadResult = await this.cloudinaryService.uploadFile(avatar);
+      updateUserDto.avatar = uploadResult.secure_url;
+    }
     await this.userRepository.update(id, updateUserDto);
     return await this.getUserById(id);
   }
