@@ -6,9 +6,9 @@ import { Movie } from './entities/movie.entity';
 import { CloudinaryModule } from '../cloudinary/cloudinary.module';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([Movie]), CloudinaryModule],
-    controllers: [MovieController],
-    providers: [MovieService],
-    exports: [MovieService],
+  imports: [TypeOrmModule.forFeature([Movie]), CloudinaryModule],
+  controllers: [MovieController],
+  providers: [MovieService],
+  exports: [MovieService],
 })
-export class MovieModule { }
+export class MovieModule {}

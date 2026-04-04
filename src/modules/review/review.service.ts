@@ -41,7 +41,7 @@ export class ReviewService {
                 user: {
                     id: true,
                     name: true,
-                    avarta: true
+                    avatar: true
                 }
             },
             order: { created_at: 'DESC' }
@@ -61,7 +61,7 @@ export class ReviewService {
                 user: {
                     id: true,
                     name: true,
-                    avarta: true
+                    avatar: true
                 }
             },
             skip: (page - 1) * limit,
